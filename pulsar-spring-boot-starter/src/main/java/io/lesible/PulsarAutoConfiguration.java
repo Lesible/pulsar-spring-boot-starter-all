@@ -5,7 +5,6 @@ import io.lesible.properties.PulsarProperties;
 import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 @ComponentScan
+@ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties({PulsarProperties.class, GlobalConsumerProperties.class})
 public class PulsarAutoConfiguration {
 
@@ -31,7 +31,6 @@ public class PulsarAutoConfiguration {
     }
 
     @Bean("pulsarClient")
-    @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "pulsar.is-tdmq", havingValue = "false", matchIfMissing = true)
     public PulsarClient pulsarClient() throws PulsarClientException {
         return PulsarClient.builder()
@@ -48,7 +47,6 @@ public class PulsarAutoConfiguration {
     }
 
     @Bean(name = "pulsarClient")
-    @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "pulsar.is-tdmq", havingValue = "true")
     public PulsarClient tdmqClient() throws PulsarClientException {
         return PulsarClient.builder()
@@ -65,5 +63,6 @@ public class PulsarAutoConfiguration {
                 .maxBackoffInterval(pulsarProperties.getMaxBackoffInterval().toMillis(), TimeUnit.SECONDS)
                 .build();
     }
+
 }
 

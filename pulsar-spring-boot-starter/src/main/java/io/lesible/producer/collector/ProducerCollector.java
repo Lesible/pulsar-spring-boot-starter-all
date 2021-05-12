@@ -5,10 +5,12 @@ import io.lesible.exception.InitFailedException;
 import io.lesible.producer.IProducerFactory;
 import io.lesible.producer.ProducerHolder;
 import io.lesible.util.SchemaUtil;
+import io.lesible.util.TopicBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.*;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -17,6 +19,7 @@ import org.springframework.util.StringValueResolver;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Configuration
+@ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolverAware {
 
     /**
@@ -37,10 +41,13 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
 
     private final PulsarClient pulsarClient;
 
+    private final TopicBuilder topicBuilder;
+
     private StringValueResolver stringValueResolver;
 
-    public ProducerCollector(PulsarClient pulsarClient) {
+    public ProducerCollector(PulsarClient pulsarClient, TopicBuilder topicBuilder) {
         this.pulsarClient = pulsarClient;
+        this.topicBuilder = topicBuilder;
     }
 
     @Override
@@ -83,11 +90,11 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
             String producerName = producerHolder.getProducerName();
 
             if (!StringUtils.hasLength(producerName)) {
-                producerName = topic + "-producer";
+                producerName = topic + "-producer" + UUID.randomUUID();
             }
 
             ProducerBuilder<?> builder = pulsarClient.newProducer(schema)
-                    .topic(topic).producerName(producerName)
+                    .topic(topicBuilder.buildTopicUrl(topic)).producerName(producerName)
                     .blockIfQueueFull(producerHolder.isBlockIfQueueFull())
                     .enableBatching(producerHolder.isEnableBatching())
                     .batchingMaxBytes(producerHolder.getBatchingMaxBytes())

@@ -2,22 +2,19 @@ package io.lesible.consumer.collector;
 
 import io.lesible.annotation.PulsarConsumer;
 import io.lesible.consumer.ConsumerHolder;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -29,8 +26,8 @@ import java.util.stream.Collectors;
  *
  * @author 何嘉豪
  */
-@Slf4j
 @Configuration
+@ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 public class ConsumerCollector implements BeanPostProcessor {
 
     /**
@@ -81,7 +78,7 @@ public class ConsumerCollector implements BeanPostProcessor {
                     Arrays.stream(handler.getGenericParameterTypes())
                             .map(Type::getTypeName).collect(Collectors.joining(",")) + ")";
         }
-        return consumerName;
+        return consumerName + UUID.randomUUID();
     }
 
     /**
@@ -105,21 +102,6 @@ public class ConsumerCollector implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Class<?> targetClass = AopUtils.getTargetClass(bean);
-        List<ConsumerHolder> methods = new ArrayList<>();
-        ReflectionUtils.doWithMethods(targetClass, method -> {
-            List<PulsarConsumer> annotations = MergedAnnotations.from(method, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
-                    .stream(PulsarConsumer.class)
-                    .map(MergedAnnotation::synthesize)
-                    .collect(Collectors.toList());
-            if (annotations.size() > 0) {
-                methods.add(new ConsumerHolder(annotations.get(0), bean, method));
-            }
-        }, ReflectionUtils.USER_DECLARED_METHODS);
-        if (!CollectionUtils.isEmpty(methods)) {
-            log.info("methods: {}", methods);
-        }
         return bean;
     }
-
 }

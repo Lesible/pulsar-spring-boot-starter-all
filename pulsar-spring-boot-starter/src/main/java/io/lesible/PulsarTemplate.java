@@ -2,10 +2,14 @@ package io.lesible;
 
 import io.lesible.exception.NoSuchTopicException;
 import io.lesible.producer.collector.ProducerCollector;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.MessageId;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.apache.pulsar.client.api.TypedMessageBuilder;
+import org.apache.pulsar.shade.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.pulsar.shade.com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -20,9 +24,13 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 何嘉豪
  */
+@Slf4j
 @Component
 @SuppressWarnings("unchecked")
+@ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 public class PulsarTemplate {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final ProducerCollector producerCollector;
 
@@ -42,7 +50,6 @@ public class PulsarTemplate {
     public MessageId send(String topic, Object msg) throws PulsarClientException {
         return buildMsg(topic, msg).send();
     }
-
 
     /**
      * 异步发送消息
@@ -147,6 +154,12 @@ public class PulsarTemplate {
         Object actualMsg = msg;
         if (msg instanceof CharSequence) {
             actualMsg = (((CharSequence) msg).toString().getBytes(StandardCharsets.UTF_8));
+        } else {
+            try {
+                actualMsg = OBJECT_MAPPER.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8);
+            } catch (JsonProcessingException e) {
+                log.error("序列化实体类失败", e);
+            }
         }
         return actualMsg;
     }

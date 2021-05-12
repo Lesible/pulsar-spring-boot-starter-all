@@ -111,6 +111,11 @@ public class PulsarProperties {
     /**
      * (租户)/(tdmq 集群 id)
      */
-    private String tenant;
+    private String tenant = "public";
+
+    /**
+     * 是否启用 pulsar
+     */
+    private boolean enabled;
 
 }

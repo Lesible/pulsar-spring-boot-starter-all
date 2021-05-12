@@ -7,9 +7,11 @@ import io.lesible.exception.EmptyTopicException;
 import io.lesible.exception.InitFailedException;
 import io.lesible.properties.GlobalConsumerProperties;
 import io.lesible.util.SchemaUtil;
+import io.lesible.util.TopicBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.*;
 import org.apache.pulsar.client.util.RetryMessageUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Configuration
 @DependsOn({"pulsarClient", "consumerCollector"})
+@ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 public class ConsumerAggregator implements EmbeddedValueResolverAware {
 
     /**
@@ -50,6 +53,8 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
      */
     private final GlobalConsumerProperties globalConsumerProperties;
 
+    private final TopicBuilder topicBuilder;
+
     /**
      * 用于处理 spEL
      */
@@ -57,14 +62,15 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
 
     private List<Consumer<?>> consumers;
 
-    public ConsumerAggregator(ConsumerCollector consumerCollector, PulsarClient pulsarClient, GlobalConsumerProperties globalConsumerProperties) {
+    public ConsumerAggregator(ConsumerCollector consumerCollector, PulsarClient pulsarClient, GlobalConsumerProperties globalConsumerProperties, TopicBuilder topicBuilder) {
         this.consumerCollector = consumerCollector;
         this.pulsarClient = pulsarClient;
         this.globalConsumerProperties = globalConsumerProperties;
+        this.topicBuilder = topicBuilder;
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         Map<String, ConsumerHolder> consumerHolderMapping = consumerCollector.getConsumerHolderMapping();
         consumers = consumerHolderMapping.entrySet().stream()
                 .map(entry -> subscribe(entry.getKey(), entry.getValue()))
@@ -88,10 +94,10 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
             // 判断是否需要重试, 默认是需要的,但对于腾讯云来说 死信和重试队列的名称需要自己指定
             boolean retryEnable = pulsarConsumer.retryEnable();
             String subscriptionName = StringUtils.hasLength(pulsarConsumer.subscriptionName()) ?
-                    pulsarConsumer.subscriptionName() : "subscription_" + consumerName;
+                    pulsarConsumer.subscriptionName() : "subscription_" + topic;
             Schema<?> schema = SchemaUtil.schema(pulsarConsumer.msgType());
             ConsumerBuilder<?> consumerBuilder = pulsarClient.newConsumer(schema)
-                    .consumerName(consumerName).topic(topic)
+                    .consumerName(consumerName).topic(topicBuilder.buildTopicUrl(topic))
                     .subscriptionType(pulsarConsumer.subscriptionType())
                     .subscriptionName(subscriptionName)
                     .enableRetry(retryEnable);
@@ -106,7 +112,10 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                         && !StringUtils.hasLength(deadLetterTopic)
                         && !StringUtils.hasLength(deadLetter.retryLetterTopic())) {
                     // 对于没有设置的场景, pulsar 将会在 retryEnable 时,自动初始化一个默认的死信策略
-                    deadLetterPolicy = null;
+                    deadLetterPolicy = DeadLetterPolicy.builder()
+                            .deadLetterTopic(topicBuilder.getPrefix() + subscriptionName + TopicBuilder.DEAD_QUEUE_SUFFIX)
+                            .retryLetterTopic(topicBuilder.getPrefix() + subscriptionName + TopicBuilder.RETRY_QUEUE_SUFFIX)
+                            .maxRedeliverCount(16).build();
                 } else {
                     DeadLetterPolicy.DeadLetterPolicyBuilder builder = DeadLetterPolicy.builder();
                     builder.maxRedeliverCount(maxRedeliverCount);
