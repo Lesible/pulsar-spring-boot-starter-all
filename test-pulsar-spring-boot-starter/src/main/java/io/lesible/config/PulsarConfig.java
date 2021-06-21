@@ -1,5 +1,6 @@
 package io.lesible.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lesible.annotation.DeadLetter;
 import io.lesible.annotation.PulsarConsumer;
 import io.lesible.model.User;
@@ -9,11 +10,11 @@ import io.lesible.producer.ProducerHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
-import org.apache.pulsar.client.api.Schema;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ import java.time.LocalDateTime;
  * @author 何嘉豪
  */
 @Slf4j
-@Configuration
+@Component
 public class PulsarConfig {
 
     @Resource
@@ -36,9 +37,8 @@ public class PulsarConfig {
     }
 
     @Bean
-    public Producer<User> produceUser() throws Exception {
-        return pulsarClient.newProducer(Schema.JSON(User.class))
-                .topic("user-topic").producerName("user-producer").create();
+    public Producer<byte[]> produceUser() throws Exception {
+        return pulsarClient.newProducer().topic("user-topic").producerName("user-producer").create();
     }
 
     @Bean
@@ -49,28 +49,44 @@ public class PulsarConfig {
                         .batchingMaxPublishDelay(Duration.ofSeconds(30))
                         .producerName("batch-user-producer")
                         .enableBatching(true)
-                        .msgType(User.class)
                         .build())
-                .addProducer("delay-after-topic", User.class)
-                .addProducer("delay-at-topic", User.class);
+                .addProducer("delay-after-topic")
+                .addProducer("delay-at-topic");
     }
 
-    @PulsarConsumer(topic = "batch-topic", msgType = User.class,
+    @PulsarConsumer(topic = "batch-topic",
             deadLetter = @DeadLetter(maxRedeliverCount = 20,
                     deadLetterTopic = "dead-batch-topic", retryLetterTopic = "retry-batch-topic"),
             consumerName = "batch-user-consumer")
-    public void batchConsumeUser(User user) {
+    public void batchConsumeUser(byte[] bytes) throws Exception {
+        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
         log.info("user: {}", user);
     }
 
 
-    @PulsarConsumer(topic = "delay-after-topic", msgType = User.class)
-    public void delayAfterConsumer(User user) {
+    @PulsarConsumer(topic = "delay-after-topic")
+    public void delayAfterConsumer(byte[] bytes) throws Exception {
+        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
         log.info("user: {},date: {}", user, LocalDateTime.now());
     }
 
-    @PulsarConsumer(topic = "delay-at-topic", msgType = User.class)
-    public void delayAtConsumer(User user) {
+    @PulsarConsumer(topic = "delay-at-topic")
+    public void delayAtConsumer(byte[] bytes) throws Exception {
+        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
         log.info("user: {},date: {}", user, LocalDateTime.now());
     }
+
+    @PulsarConsumer(topic = "user-topic")
+    public void userTopicConsumer(byte[] bytes) throws Exception {
+        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
+        log.info("user: {},date: {}", user, LocalDateTime.now());
+    }
+
+    @PulsarConsumer(topic = "simple-topic")
+    public void simpleTopicConsumer(byte[] bytes) throws Exception {
+        String msg = new String(bytes, StandardCharsets.UTF_8);
+        log.info("simple msg received:{},at {}", msg, LocalDateTime.now());
+    }
+
 }
+

@@ -1,6 +1,10 @@
 pulsar:
-  service-url: pulsar://39.107.66.229:6650
+  service-url: pulsar://192.168.110.200:6650
+
 
 logging:
   level:
     io.lesible: debug
+    org.apache.pulsar.client.impl:
+      ConsumerStatsRecorderImpl: off
+      ProducerStatsRecorderImpl: off
