@@ -6,6 +6,7 @@ import io.lesible.consumer.collector.ConsumerCollector;
 import io.lesible.exception.EmptyTopicException;
 import io.lesible.exception.InitFailedException;
 import io.lesible.properties.GlobalConsumerProperties;
+import io.lesible.util.JsonUtil;
 import io.lesible.util.SchemaUtil;
 import io.lesible.util.TopicBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.util.StringValueResolver;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,18 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                     Method handler = consumerHolder.getHandler();
                     Object invoker = consumerHolder.getInvoker();
                     Object args = msg.getValue();
+                    if (args instanceof byte[]) {
+                        Class<?>[] parameterTypes = handler.getParameterTypes();
+                        Class<?> parameterType = parameterTypes[0];
+                        if (!parameterType.equals(args.getClass())) {
+                            String json = new String(((byte[]) args), StandardCharsets.UTF_8);
+                            if (CharSequence.class.isAssignableFrom(parameterType)) {
+                                args = json;
+                            } else {
+                                args = JsonUtil.parseJson(json, parameterType);
+                            }
+                        }
+                    }
                     handler.invoke(invoker, args);
                     consumer.acknowledge(msg);
                 } catch (Exception e) {

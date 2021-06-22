@@ -77,14 +77,12 @@ public class PulsarConfig {
     }
 
     @PulsarConsumer(topic = "user-topic")
-    public void userTopicConsumer(byte[] bytes) throws Exception {
-        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
+    public void userTopicConsumer(User user) throws Exception {
         log.info("user: {},date: {}", user, LocalDateTime.now());
     }
 
     @PulsarConsumer(topic = "simple-topic")
-    public void simpleTopicConsumer(byte[] bytes) throws Exception {
-        String msg = new String(bytes, StandardCharsets.UTF_8);
+    public void simpleTopicConsumer(String msg) throws Exception {
         log.info("simple msg received:{},at {}", msg, LocalDateTime.now());
     }
 
