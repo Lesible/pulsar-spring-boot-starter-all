@@ -10,7 +10,9 @@ import io.lesible.producer.ProducerHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
+import org.springframework.boot.LazyInitializationExcludeFilter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -29,6 +31,13 @@ public class PulsarConfig {
 
     @Resource
     private PulsarClient pulsarClient;
+
+    @Bean
+    @Lazy(false)
+    public LazyInitializationExcludeFilter integrationLazyInitExcludeFilter() {
+        return LazyInitializationExcludeFilter.forBeanTypes(IProducerFactory.class, PulsarClient.class, Producer.class);
+    }
+
 
     @Bean
     public Producer<byte[]> producer() throws Exception {

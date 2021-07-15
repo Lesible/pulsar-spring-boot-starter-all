@@ -30,4 +30,12 @@ public class TopicBuilder {
                 "/";
     }
 
+    public String getDeadQueueSuffix() {
+        return pulsarProperties.isLowerCase() ? DEAD_QUEUE_SUFFIX : DEAD_QUEUE_SUFFIX.toUpperCase();
+    }
+
+    public String getRetryQueueSuffix() {
+        return pulsarProperties.isLowerCase() ? RETRY_QUEUE_SUFFIX : RETRY_QUEUE_SUFFIX.toUpperCase();
+    }
+
 }

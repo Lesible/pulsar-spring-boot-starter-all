@@ -1,4 +1,4 @@
-package io.lesible;
+package io.lesible.autoconfigure;
 
 import io.lesible.properties.GlobalConsumerProperties;
 import io.lesible.properties.PulsarProperties;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author 何嘉豪
  */
 @Configuration
-@ComponentScan
+@ComponentScan(basePackages = "io.lesible")
 @ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties({PulsarProperties.class, GlobalConsumerProperties.class})
 public class PulsarAutoConfiguration {

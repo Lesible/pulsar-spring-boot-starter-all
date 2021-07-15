@@ -118,4 +118,9 @@ public class PulsarProperties {
      */
     private boolean enabled;
 
+    /**
+     * 队列后缀使用大小写
+     */
+    private boolean lowerCase = true;
+
 }
