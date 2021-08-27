@@ -33,7 +33,7 @@ public class TopicBuilder {
         return DEFAULT_PERSISTENCE + "://"
                 + (StringUtils.hasLength(tenant) ? tenant : pulsarProperties.getTenant())
                 + "/"
-                + (StringUtils.hasLength(namespace) ? tenant : pulsarProperties.getNamespace())
+                + (StringUtils.hasLength(namespace) ? namespace : pulsarProperties.getNamespace())
                 + "/";
     }
 

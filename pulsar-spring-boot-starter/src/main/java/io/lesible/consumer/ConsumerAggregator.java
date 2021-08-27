@@ -115,9 +115,10 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                         && !StringUtils.hasLength(deadLetterTopic)
                         && !StringUtils.hasLength(deadLetter.retryLetterTopic())) {
                     // 对于没有设置的场景, pulsar 将会在 retryEnable 时,自动初始化一个默认的死信策略
+                    String prefix = topicBuilder.getPrefix(tenant, namespace) + subscriptionName;
                     deadLetterPolicy = DeadLetterPolicy.builder()
-                            .deadLetterTopic(topicBuilder.getPrefix() + subscriptionName + topicBuilder.getDeadQueueSuffix())
-                            .retryLetterTopic(topicBuilder.getPrefix() + subscriptionName + topicBuilder.getRetryQueueSuffix())
+                            .deadLetterTopic(prefix + topicBuilder.getDeadQueueSuffix())
+                            .retryLetterTopic(prefix + topicBuilder.getRetryQueueSuffix())
                             .maxRedeliverCount(16).build();
                 } else {
                     DeadLetterPolicy.DeadLetterPolicyBuilder builder = DeadLetterPolicy.builder();

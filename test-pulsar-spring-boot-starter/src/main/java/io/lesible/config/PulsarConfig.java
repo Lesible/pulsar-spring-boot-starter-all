@@ -49,7 +49,7 @@ public class PulsarConfig {
     @Bean
     public IProducerFactory producerFactory() throws Exception {
         return new ProducerFactory()
-                .addProducer("batch-topic", ProducerHolder.builder()
+                .addProducer(ProducerHolder.builder("batch-topic")
                         .batchingMaxMessages(20)
                         .batchingMaxPublishDelay(Duration.ofSeconds(30))
                         .producerName("batch-user-producer")
@@ -57,7 +57,6 @@ public class PulsarConfig {
                         .build())
                 .addProducer("delay-after-topic")
                 .addProducer("delay-at-topic")
-                .addProducer("simple-topic")
                 .addProducer("user-topic");
     }
 
@@ -88,7 +87,7 @@ public class PulsarConfig {
         log.info("user: {},date: {}", user, LocalDateTime.now());
     }
 
-    @PulsarConsumer(topic = "simple-topic")
+    @PulsarConsumer(topic = "simple-topic", namespace = "default", tenant = "public")
     public void simpleTopicConsumer(String msg) throws Exception {
         log.info("simple msg received:{},at {}", msg, LocalDateTime.now());
     }

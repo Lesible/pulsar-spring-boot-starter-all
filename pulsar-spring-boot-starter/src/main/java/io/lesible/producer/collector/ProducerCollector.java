@@ -92,13 +92,14 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
             if (!StringUtils.hasLength(producerName)) {
                 producerName = topic + "-producer" + UUID.randomUUID();
             }
+            String tenant = producerHolder.getTenant();
+            String namespace = producerHolder.getNamespace();
             ProducerBuilder<?> builder = pulsarClient.newProducer(schema)
-                    .topic(topicBuilder.buildTopicUrl(topic)).producerName(producerName)
+                    .topic(topicBuilder.buildTopicUrl(tenant, namespace, topic)).producerName(producerName)
                     .blockIfQueueFull(producerHolder.isBlockIfQueueFull())
                     .enableBatching(producerHolder.isEnableBatching())
                     .batchingMaxBytes(producerHolder.getBatchingMaxBytes())
                     .batchingMaxMessages(producerHolder.getBatchingMaxMessages());
-
             Duration sendTimeout = producerHolder.getSendTimeout();
             Duration batchingMaxPublishDelay = producerHolder.getBatchingMaxPublishDelay();
             if (sendTimeout != null) {

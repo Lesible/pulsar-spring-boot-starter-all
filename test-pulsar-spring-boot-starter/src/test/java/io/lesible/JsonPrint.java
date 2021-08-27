@@ -3,8 +3,11 @@ package io.lesible;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lesible.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.api.PulsarClient;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +33,13 @@ public class JsonPrint {
     public void currentTimeMillis() {
         long currentTimeMillis = System.currentTimeMillis();
         log.info("30s after: {}", currentTimeMillis + 30000);
+    }
+
+    @Test
+    public void produceMsg() throws Exception {
+        PulsarClient build = PulsarClient.builder().serviceUrl("pulsar://192.168.110.200:6650").build();
+        Producer<byte[]> producer = build.newProducer().topic("persistent://public/default/simple-topic").create();
+        producer.send("this is relic's test".getBytes(StandardCharsets.UTF_8));
     }
 
 }
