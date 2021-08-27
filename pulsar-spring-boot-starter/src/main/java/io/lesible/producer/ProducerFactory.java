@@ -34,23 +34,23 @@ public class ProducerFactory implements IProducerFactory {
     }
 
     public ProducerFactory addProducer(String topic, Class<?> msgType, String producerName) {
-        addProducer(ProducerHolder.builder().topic(topic)
+        addProducer(ProducerHolder.builder(topic)
                 .msgType(msgType).producerName(producerName).build());
         return this;
     }
 
     public ProducerFactory addProducer(String topic) {
-        addProducer(ProducerHolder.builder().topic(topic).build());
+        addProducer(ProducerHolder.builder(topic).build());
         return this;
     }
 
     public ProducerFactory addProducer(String topic, Class<?> msgType) {
-        addProducer(ProducerHolder.builder().topic(topic).msgType(msgType).build());
+        addProducer(ProducerHolder.builder(topic).msgType(msgType).build());
         return this;
     }
 
     public ProducerFactory addProducer(String topic, String producerName) {
-        addProducer(ProducerHolder.builder().topic(topic).producerName(producerName).build());
+        addProducer(ProducerHolder.builder(topic).producerName(producerName).build());
         return this;
     }
 

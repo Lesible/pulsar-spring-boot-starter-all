@@ -2,6 +2,7 @@ package io.lesible.util;
 
 import io.lesible.properties.PulsarProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * <p> @date: 2021-04-15 14:50</p>
@@ -21,13 +22,23 @@ public class TopicBuilder {
     }
 
     public String buildTopicUrl(String topic) {
-        return DEFAULT_PERSISTENCE + "://" + pulsarProperties.getTenant() + "/" + pulsarProperties.getNamespace() +
-                "/" + topic;
+        return getPrefix() + topic;
+    }
+
+    public String buildTopicUrl(String tenant, String namespace, String topic) {
+        return getPrefix(tenant, namespace) + topic;
+    }
+
+    public String getPrefix(String tenant, String namespace) {
+        return DEFAULT_PERSISTENCE + "://"
+                + (StringUtils.hasLength(tenant) ? tenant : pulsarProperties.getTenant())
+                + "/"
+                + (StringUtils.hasLength(namespace) ? tenant : pulsarProperties.getNamespace())
+                + "/";
     }
 
     public String getPrefix() {
-        return DEFAULT_PERSISTENCE + "://" + pulsarProperties.getTenant() + "/" + pulsarProperties.getNamespace() +
-                "/";
+        return getPrefix(pulsarProperties.getTenant(), pulsarProperties.getNamespace());
     }
 
     public String getDeadQueueSuffix() {

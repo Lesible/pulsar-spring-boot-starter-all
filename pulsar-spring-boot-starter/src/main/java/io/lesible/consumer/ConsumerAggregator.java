@@ -95,14 +95,15 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
         try {
             // 判断是否需要重试, 默认是需要的,但对于腾讯云来说 死信和重试队列的名称需要自己指定
             boolean retryEnable = pulsarConsumer.retryEnable();
+            String tenant = pulsarConsumer.tenant();
+            String namespace = pulsarConsumer.namespace();
             String subscriptionName = StringUtils.hasLength(pulsarConsumer.subscriptionName()) ?
                     pulsarConsumer.subscriptionName() : "subscription_" + topic;
             Schema<?> schema = SchemaUtil.schema(pulsarConsumer.msgType());
             ConsumerBuilder<?> consumerBuilder = pulsarClient.newConsumer(schema)
-                    .consumerName(consumerName).topic(topicBuilder.buildTopicUrl(topic))
+                    .consumerName(consumerName).topic(topicBuilder.buildTopicUrl(tenant, namespace, topic))
                     .subscriptionType(pulsarConsumer.subscriptionType())
-                    .subscriptionName(subscriptionName)
-                    .enableRetry(retryEnable);
+                    .subscriptionName(subscriptionName).enableRetry(retryEnable);
             if (retryEnable) {
                 // 获取死信队列策略,并进行设置
                 DeadLetter deadLetter = pulsarConsumer.deadLetter();

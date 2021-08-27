@@ -8,14 +8,9 @@ import io.lesible.producer.IProducerFactory;
 import io.lesible.producer.ProducerFactory;
 import io.lesible.producer.ProducerHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pulsar.client.api.Producer;
-import org.apache.pulsar.client.api.PulsarClient;
-import org.springframework.boot.LazyInitializationExcludeFilter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -28,12 +23,12 @@ import java.time.LocalDateTime;
 @Slf4j
 @Component
 public class PulsarConfig {
+/*
 
     @Resource
     private PulsarClient pulsarClient;
 
     @Bean
-    @Lazy(false)
     public LazyInitializationExcludeFilter integrationLazyInitExcludeFilter() {
         return LazyInitializationExcludeFilter.forBeanTypes(IProducerFactory.class, PulsarClient.class, Producer.class);
     }
@@ -49,6 +44,7 @@ public class PulsarConfig {
     public Producer<byte[]> produceUser() throws Exception {
         return pulsarClient.newProducer().topic("user-topic").producerName("user-producer").create();
     }
+*/
 
     @Bean
     public IProducerFactory producerFactory() throws Exception {
@@ -60,7 +56,9 @@ public class PulsarConfig {
                         .enableBatching(true)
                         .build())
                 .addProducer("delay-after-topic")
-                .addProducer("delay-at-topic");
+                .addProducer("delay-at-topic")
+                .addProducer("simple-topic")
+                .addProducer("user-topic");
     }
 
     @PulsarConsumer(topic = "batch-topic",

@@ -32,6 +32,16 @@ public class ProducerHolder {
     private String producerName;
 
     /**
+     * 租户
+     */
+    private String tenant;
+
+    /**
+     * 命名空间
+     */
+    private String namespace;
+
+    /**
      * 发送超时时间,默认为 30 秒, 设置为 0,则不限时
      * <p>
      * 如果超时时间内没有成功被服务端确认,将会抛出一个异常
@@ -79,67 +89,107 @@ public class ProducerHolder {
      */
     private int batchingMaxBytes = 1 << 17;
 
-    public static ProducerHolderBuilder builder() {
-        return new ProducerHolderBuilder();
+    private ProducerHolder(Builder builder) {
+        this.topic = builder.topic;
+        this.msgType = builder.msgType;
+        this.producerName = builder.producerName;
+        this.tenant = builder.tenant;
+        this.namespace = builder.namespace;
+        this.sendTimeout = builder.sendTimeout;
+        this.blockIfQueueFull = builder.blockIfQueueFull;
+        this.enableBatching = builder.enableBatching;
+        this.batchingMaxPublishDelay = builder.batchingMaxPublishDelay;
+        this.batchingMaxMessages = builder.batchingMaxMessages;
+        this.batchingMaxBytes = builder.batchingMaxBytes;
+    }
+
+    public static Builder builder(String topic) {
+        return new Builder(topic);
     }
 
     /**
      * builder
      */
-    public static class ProducerHolderBuilder {
+    public static class Builder {
 
-        private final ProducerHolder producerHolder = new ProducerHolder();
+        private final String topic;
 
-        public ProducerHolderBuilder() {
+        private Class<?> msgType = byte[].class;
+
+        private String producerName = "";
+
+        private String tenant = "";
+
+        private String namespace = "";
+
+        private Duration sendTimeout = Duration.ofSeconds(30);
+
+        private boolean blockIfQueueFull;
+
+        private boolean enableBatching;
+
+        private Duration batchingMaxPublishDelay = Duration.ofMillis(1L);
+
+        private int batchingMaxMessages = 1000;
+
+        private int batchingMaxBytes = 1 << 17;
+
+        private Builder(String topic) {
+            this.topic = topic;
         }
 
-        public ProducerHolder.ProducerHolderBuilder topic(String topic) {
-            producerHolder.setTopic(topic);
+        public Builder msgType(Class<?> msgType) {
+            this.msgType = msgType;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder msgType(Class<?> msgType) {
-            producerHolder.setMsgType(msgType);
+        public Builder producerName(String producerName) {
+            this.producerName = producerName;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder producerName(String producerName) {
-            producerHolder.setProducerName(producerName);
+        public Builder sendTimeout(Duration sendTimeout) {
+            this.sendTimeout = sendTimeout;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder sendTimeout(Duration sendTimeout) {
-            producerHolder.setSendTimeout(sendTimeout);
+        public Builder blockIfQueueFull(boolean blockIfQueueFull) {
+            this.blockIfQueueFull = blockIfQueueFull;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder blockIfQueueFull(boolean blockIfQueueFull) {
-            producerHolder.setBlockIfQueueFull(blockIfQueueFull);
+        public Builder tenant(String tenant) {
+            this.tenant = tenant;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder enableBatching(boolean enableBatching) {
-            producerHolder.setEnableBatching(enableBatching);
+        public Builder namespace(String namespace) {
+            this.namespace = namespace;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder batchingMaxPublishDelay(Duration batchingMaxPublishDelay) {
-            producerHolder.setBatchingMaxPublishDelay(batchingMaxPublishDelay);
+        public Builder enableBatching(boolean enableBatching) {
+            this.enableBatching = enableBatching;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder batchingMaxMessages(int batchingMaxMessages) {
-            producerHolder.setBatchingMaxMessages(batchingMaxMessages);
+        public Builder batchingMaxPublishDelay(Duration batchingMaxPublishDelay) {
+            this.batchingMaxPublishDelay = batchingMaxPublishDelay;
             return this;
         }
 
-        public ProducerHolder.ProducerHolderBuilder batchingMaxBytes(int batchingMaxBytes) {
-            producerHolder.setBatchingMaxBytes(batchingMaxBytes);
+        public Builder batchingMaxMessages(int batchingMaxMessages) {
+            this.batchingMaxMessages = batchingMaxMessages;
+            return this;
+        }
+
+        public Builder batchingMaxBytes(int batchingMaxBytes) {
+            this.batchingMaxBytes = batchingMaxBytes;
             return this;
         }
 
         public ProducerHolder build() {
-            return producerHolder;
+            return new ProducerHolder(this);
         }
     }
 }

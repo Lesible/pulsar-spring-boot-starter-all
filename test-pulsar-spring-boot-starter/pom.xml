@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.lesible</groupId>
+        <groupId>com.sumwhy.pulsar</groupId>
         <artifactId>pulsar-spring-boot-starter-all</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>test-pulsar-spring-boot-starter</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -28,13 +28,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.sumwhy.pulsar</groupId>
             <artifactId>pulsar-spring-boot-starter</artifactId>
-            <version>1.1.0</version>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

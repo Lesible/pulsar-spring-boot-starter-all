@@ -76,6 +76,20 @@ public @interface PulsarConsumer {
     String consumerName() default "";
 
     /**
+     * 租户名称
+     *
+     * @return 租户名称
+     */
+    String tenant() default "";
+
+    /**
+     * 命名空间
+     *
+     * @return 命名空间
+     */
+    String namespace() default "";
+
+    /**
      * 设置预拉取消息的最大大小,默认为 1000,提高大小会增加吞吐量,同时影响批量消息,但是提高内存使用.
      *
      * @return 接收队列的大小
