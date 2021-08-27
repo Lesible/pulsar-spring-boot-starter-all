@@ -2,8 +2,8 @@ package io.lesible.producer.collector;
 
 import io.lesible.annotation.PulsarProducer;
 import io.lesible.exception.InitFailedException;
+import io.lesible.model.ProducerHolder;
 import io.lesible.producer.IProducerFactory;
-import io.lesible.producer.ProducerHolder;
 import io.lesible.util.SchemaUtil;
 import io.lesible.util.TopicBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,11 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
         Class<?> beanClass = bean.getClass();
         if (beanClass.isAnnotationPresent(PulsarProducer.class) && bean instanceof IProducerFactory) {
             producerMapping.putAll(((IProducerFactory) bean).getProducersInfo().entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> createProducer(entry.getValue()))));
+                    .collect(Collectors.toMap(
+                            // 实际 topic 作为键
+                            entry -> topicBuilder.buildTopicUrl(entry.getKey()),
+                            // producer
+                            entry -> createProducer(entry.getValue()))));
         }
         if (bean instanceof Producer) {
             Producer<?> producer = (Producer<?>) bean;

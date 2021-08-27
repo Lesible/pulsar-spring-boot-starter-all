@@ -1,5 +1,6 @@
 package io.lesible.util;
 
+import io.lesible.model.TopicInfo;
 import io.lesible.properties.PulsarProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -22,11 +23,29 @@ public class TopicBuilder {
     }
 
     public String buildTopicUrl(String topic) {
+        if (checkTopicIfStandard(topic)) {
+            return topic;
+        }
         return getPrefix() + topic;
     }
 
+    private boolean checkTopicIfStandard(String topic) {
+        return topic.contains(DEFAULT_PERSISTENCE + "//");
+    }
+
     public String buildTopicUrl(String tenant, String namespace, String topic) {
+        if (checkTopicIfStandard(topic)) {
+            return topic;
+        }
         return getPrefix(tenant, namespace) + topic;
+    }
+
+    public String buildTopicUrl(TopicInfo topicInfo) {
+        String topic = topicInfo.getTopic();
+        if (checkTopicIfStandard(topic)) {
+            return topic;
+        }
+        return getPrefix(topicInfo.getTenant(), topicInfo.getNamespace()) + topic;
     }
 
     public String getPrefix(String tenant, String namespace) {

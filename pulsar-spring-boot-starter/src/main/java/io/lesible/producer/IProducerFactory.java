@@ -1,5 +1,8 @@
 package io.lesible.producer;
 
+import io.lesible.model.ProducerHolder;
+import io.lesible.model.TopicInfo;
+
 import java.util.Map;
 
 /**
@@ -14,6 +17,6 @@ public interface IProducerFactory {
      *
      * @return topic 和 producer 信息的映射
      */
-    Map<String, ProducerHolder> getProducersInfo();
+    Map<TopicInfo, ProducerHolder> getProducersInfo();
 
 }

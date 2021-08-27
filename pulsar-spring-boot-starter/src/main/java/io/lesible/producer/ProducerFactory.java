@@ -1,6 +1,8 @@
 package io.lesible.producer;
 
 import io.lesible.annotation.PulsarProducer;
+import io.lesible.model.ProducerHolder;
+import io.lesible.model.TopicInfo;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
@@ -17,7 +19,7 @@ public class ProducerFactory implements IProducerFactory {
     /**
      * topic 和 producer 的映射
      */
-    private final Map<String, ProducerHolder> producerHolderMapping = new ConcurrentHashMap<>();
+    private final Map<TopicInfo, ProducerHolder> producerHolderMapping = new ConcurrentHashMap<>();
 
     public ProducerFactory addProducer(String topic, ProducerHolder producerHolder) {
         if (!StringUtils.hasLength(producerHolder.getTopic())) {
@@ -29,7 +31,9 @@ public class ProducerFactory implements IProducerFactory {
 
     public ProducerFactory addProducer(ProducerHolder producerHolder) {
         checkTopic(producerHolder);
-        producerHolderMapping.put(producerHolder.getTopic(), producerHolder);
+        producerHolderMapping.put(TopicInfo.builder(producerHolder.getTopic())
+                .namespace(producerHolder.getNamespace())
+                .tenant(producerHolder.getTenant()).build(), producerHolder);
         return this;
     }
 
@@ -55,7 +59,7 @@ public class ProducerFactory implements IProducerFactory {
     }
 
     @Override
-    public Map<String, ProducerHolder> getProducersInfo() {
+    public Map<TopicInfo, ProducerHolder> getProducersInfo() {
         return producerHolderMapping;
     }
 

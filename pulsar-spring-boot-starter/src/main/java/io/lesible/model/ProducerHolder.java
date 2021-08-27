@@ -1,8 +1,6 @@
-package io.lesible.producer;
+package io.lesible.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 
@@ -12,8 +10,6 @@ import java.time.Duration;
  * @author 何嘉豪
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProducerHolder {
 
     /**
@@ -24,7 +20,7 @@ public class ProducerHolder {
     /**
      * 消息格式
      */
-    private Class<?> msgType = byte[].class;
+    private Class<?> msgType;
 
     /**
      * producer 的名称
@@ -82,12 +78,12 @@ public class ProducerHolder {
     /**
      * 一批消息中允许最大的消息数量 (count <i>default: 1000</i>)
      */
-    private int batchingMaxMessages = 1000;
+    private int batchingMaxMessages;
 
     /**
      * 一批消息中允许最大的消息大小 (size,单位为 B <i>default: 128KB</i>)
      */
-    private int batchingMaxBytes = 1 << 17;
+    private int batchingMaxBytes;
 
     private ProducerHolder(Builder builder) {
         this.topic = builder.topic;
