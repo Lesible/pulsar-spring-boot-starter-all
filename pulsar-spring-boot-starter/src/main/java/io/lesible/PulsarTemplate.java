@@ -3,14 +3,13 @@ package io.lesible;
 import io.lesible.exception.NoSuchTopicException;
 import io.lesible.model.TopicInfo;
 import io.lesible.producer.collector.ProducerCollector;
+import io.lesible.util.JsonUtil;
 import io.lesible.util.TopicBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.MessageId;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.apache.pulsar.client.api.TypedMessageBuilder;
-import org.apache.pulsar.shade.com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.pulsar.shade.com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unchecked")
 @ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 public class PulsarTemplate {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final ProducerCollector producerCollector;
 
@@ -266,11 +263,7 @@ public class PulsarTemplate {
         if (msg instanceof CharSequence) {
             actualMsg = (((CharSequence) msg).toString().getBytes(StandardCharsets.UTF_8));
         } else {
-            try {
-                actualMsg = OBJECT_MAPPER.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8);
-            } catch (JsonProcessingException e) {
-                log.error("序列化实体类失败", e);
-            }
+            actualMsg = JsonUtil.jsonValue(msg).getBytes(StandardCharsets.UTF_8);
         }
         return actualMsg;
     }

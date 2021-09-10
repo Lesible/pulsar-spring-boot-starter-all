@@ -30,7 +30,7 @@ public class TopicBuilder {
     }
 
     private boolean checkTopicIfStandard(String topic) {
-        return topic.contains(DEFAULT_PERSISTENCE + "//");
+        return topic.contains(DEFAULT_PERSISTENCE + "//") || topic.matches("\\S+/\\S+/\\S+");
     }
 
     public String buildTopicUrl(String tenant, String namespace, String topic) {
@@ -49,8 +49,7 @@ public class TopicBuilder {
     }
 
     public String getPrefix(String tenant, String namespace) {
-        return DEFAULT_PERSISTENCE + "://"
-                + (StringUtils.hasLength(tenant) ? tenant : pulsarProperties.getTenant())
+        return (StringUtils.hasLength(tenant) ? tenant : pulsarProperties.getTenant())
                 + "/"
                 + (StringUtils.hasLength(namespace) ? namespace : pulsarProperties.getNamespace())
                 + "/";

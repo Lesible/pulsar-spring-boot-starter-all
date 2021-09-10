@@ -3,6 +3,7 @@ package io.lesible.autoconfigure;
 import io.lesible.properties.GlobalConsumerProperties;
 import io.lesible.properties.PulsarProperties;
 import org.apache.pulsar.client.api.AuthenticationFactory;
+import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +35,7 @@ public class PulsarAutoConfiguration {
     @Bean("pulsarClient")
     @ConditionalOnProperty(name = "pulsar.is-tdmq", havingValue = "false", matchIfMissing = true)
     public PulsarClient pulsarClient() throws PulsarClientException {
-        return PulsarClient.builder()
+        ClientBuilder clientBuilder = PulsarClient.builder()
                 .serviceUrl(pulsarProperties.getServiceUrl())
                 .ioThreads(pulsarProperties.getIoThreads())
                 .listenerThreads(pulsarProperties.getListenerThreads())
@@ -42,8 +44,12 @@ public class PulsarAutoConfiguration {
                 .connectionTimeout((int) pulsarProperties.getConnectionTimeout().getSeconds(), TimeUnit.SECONDS)
                 .operationTimeout((int) pulsarProperties.getOperationTimeout().getSeconds(), TimeUnit.SECONDS)
                 .startingBackoffInterval(pulsarProperties.getMaxBackoffInterval().toMillis(), TimeUnit.MILLISECONDS)
-                .maxBackoffInterval(pulsarProperties.getMaxBackoffInterval().toMillis(), TimeUnit.SECONDS)
-                .build();
+                .maxBackoffInterval(pulsarProperties.getMaxBackoffInterval().toMillis(), TimeUnit.SECONDS);
+        String token = pulsarProperties.getToken();
+        if (StringUtils.hasText(token)) {
+            clientBuilder.authentication(AuthenticationFactory.token(token));
+        }
+        return clientBuilder.build();
     }
 
     @Bean(name = "pulsarClient")
