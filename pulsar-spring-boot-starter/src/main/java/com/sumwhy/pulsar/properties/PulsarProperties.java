@@ -53,7 +53,9 @@ public class PulsarProperties {
      *
      * <p>The listener thread pool is shared across all the consumers and readers that are
      * using a "listener" model to get messages. For a given consumer, the listener will be
-     * always invoked from the same thread, to ensure ordering.
+     * always invoked from the same thread, to ensure ordering.If you want multiple threads
+     * to process a single topic, you need to create a shared subscription and multiple
+     * consumers for this subscription. This does not ensure ordering.
      */
     private Integer listenerThreads = 10;
 

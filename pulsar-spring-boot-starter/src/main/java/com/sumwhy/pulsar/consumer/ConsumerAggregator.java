@@ -95,8 +95,8 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
         try {
             // 判断是否需要重试, 默认是需要的,但对于腾讯云来说 死信和重试队列的名称需要自己指定
             boolean retryEnable = pulsarConsumer.retryEnable();
-            String tenant = pulsarConsumer.tenant();
-            String namespace = pulsarConsumer.namespace();
+            String tenant = stringValueResolver.resolveStringValue(pulsarConsumer.tenant());
+            String namespace = stringValueResolver.resolveStringValue(pulsarConsumer.namespace());
             String subscriptionName = StringUtils.hasLength(pulsarConsumer.subscriptionName()) ?
                     pulsarConsumer.subscriptionName() : "subscription_" + topic;
             Schema<?> schema = SchemaUtil.schema(pulsarConsumer.msgType());
@@ -113,7 +113,7 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                 DeadLetterPolicy deadLetterPolicy;
                 if (maxRedeliverCount == RetryMessageUtil.MAX_RECONSUMETIMES
                         && !StringUtils.hasLength(deadLetterTopic)
-                        && !StringUtils.hasLength(deadLetter.retryLetterTopic())) {
+                        && !StringUtils.hasLength(retryLetterTopic)) {
                     // 对于没有设置的场景, pulsar 将会在 retryEnable 时,自动初始化一个默认的死信策略
                     String prefix;
                     if (pulsarConsumer.createDeadLetterByAdmin()) {
@@ -121,9 +121,18 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                     } else {
                         prefix = topicBuilder.getPrefix(tenant, namespace) + topic;
                     }
+                    String deadQueueSuffix = topicBuilder.getDeadQueueSuffix();
+                    String retryQueueSuffix = topicBuilder.getRetryQueueSuffix();
+                    String lowercaseStr = pulsarConsumer.lowercase();
+                    if (StringUtils.hasLength(lowercaseStr)) {
+                        // 只有等于 true 是 返回 true （ignoreCase）
+                        boolean lowercase = Boolean.parseBoolean(lowercaseStr);
+                        deadQueueSuffix = lowercase ? deadQueueSuffix.toLowerCase() : deadQueueSuffix.toUpperCase();
+                        retryQueueSuffix = lowercase ? retryQueueSuffix.toLowerCase() : retryQueueSuffix.toUpperCase();
+                    }
                     deadLetterPolicy = DeadLetterPolicy.builder()
-                            .deadLetterTopic(prefix + topicBuilder.getDeadQueueSuffix())
-                            .retryLetterTopic(prefix + topicBuilder.getRetryQueueSuffix())
+                            .deadLetterTopic(prefix + deadQueueSuffix)
+                            .retryLetterTopic(prefix + retryQueueSuffix)
                             .maxRedeliverCount(16).build();
                 } else {
                     DeadLetterPolicy.DeadLetterPolicyBuilder builder = DeadLetterPolicy.builder();

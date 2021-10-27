@@ -2,8 +2,10 @@ package com.sumwhy.pulsar.util;
 
 import com.sumwhy.pulsar.model.TopicInfo;
 import com.sumwhy.pulsar.properties.PulsarProperties;
+import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.util.StringValueResolver;
 
 /**
  * <p> @date: 2021-04-15 14:50</p>
@@ -11,12 +13,13 @@ import org.springframework.util.StringUtils;
  * @author 何嘉豪
  */
 @Service
-public class TopicBuilder {
+public class TopicBuilder implements EmbeddedValueResolverAware {
 
     public static final String DEAD_QUEUE_SUFFIX = "-dlq";
     public static final String RETRY_QUEUE_SUFFIX = "-retry";
     private static final String DEFAULT_PERSISTENCE = "persistent";
     private final PulsarProperties pulsarProperties;
+    private StringValueResolver stringValueResolver;
 
     private TopicBuilder(PulsarProperties pulsarProperties) {
         this.pulsarProperties = pulsarProperties;
@@ -49,9 +52,11 @@ public class TopicBuilder {
     }
 
     public String getPrefix(String tenant, String namespace) {
-        return (StringUtils.hasLength(tenant) ? tenant : pulsarProperties.getTenant())
+        return (StringUtils.hasLength(tenant) ? stringValueResolver.resolveStringValue(tenant)
+                : pulsarProperties.getTenant())
                 + "/"
-                + (StringUtils.hasLength(namespace) ? namespace : pulsarProperties.getNamespace())
+                + (StringUtils.hasLength(namespace) ? stringValueResolver.resolveStringValue(namespace)
+                : pulsarProperties.getNamespace())
                 + "/";
     }
 
@@ -67,4 +72,8 @@ public class TopicBuilder {
         return pulsarProperties.isLowerCase() ? RETRY_QUEUE_SUFFIX : RETRY_QUEUE_SUFFIX.toUpperCase();
     }
 
+    @Override
+    public void setEmbeddedValueResolver(StringValueResolver stringValueResolver) {
+        this.stringValueResolver = stringValueResolver;
+    }
 }

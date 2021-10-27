@@ -1,6 +1,7 @@
 pulsar:
   service-url: pulsar://192.168.110.200:6650
   namespace: buy-mq
+  nam
 
 logging:
   level:

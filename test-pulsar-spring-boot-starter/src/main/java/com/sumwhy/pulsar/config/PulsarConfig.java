@@ -55,15 +55,18 @@ public class PulsarConfig {
                         .producerName("batch-user-producer")
                         .enableBatching(true)
                         .build())
+                .addProducer(ProducerHolder.builder("topic-receive-task-detail-queue")
+                        .namespace("sms-mq").build())
                 .addProducer("delay-after-topic")
                 .addProducer("delay-at-topic")
                 .addProducer("user-topic");
     }
 
-    @PulsarConsumer(topic = "batch-topic",
-            deadLetter = @DeadLetter(maxRedeliverCount = 20,
-                    deadLetterTopic = "dead-batch-topic", retryLetterTopic = "retry-batch-topic"),
-            consumerName = "batch-user-consumer")
+    @PulsarConsumer(topic = "topic_task_status_callback_tagvv",
+            deadLetter = @DeadLetter(maxRedeliverCount = 3,
+                    deadLetterTopic = "topic_task_status_callback_tagvv-DLQ",
+                    retryLetterTopic = "topic_task_status_callback_tagvv-RETRY"),
+            namespace = "${sms.namespace}")
     public void batchConsumeUser(byte[] bytes) throws Exception {
         User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
         log.info("user: {}", user);

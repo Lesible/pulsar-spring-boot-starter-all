@@ -97,10 +97,15 @@ public @interface PulsarConsumer {
     int receiverQueueSize() default 1000;
 
     /**
-     * 是否有 admin
+     * 是否由 admin 创建,是的话，死信和重试队列会在队列名前加上 subscription
      *
      * @return 是否由 admin 创建
      */
     boolean createDeadLetterByAdmin() default true;
+
+    /**
+     * @return 死信和重试队列的后缀使用大写还是小写
+     */
+    String lowercase() default "";
 
 }

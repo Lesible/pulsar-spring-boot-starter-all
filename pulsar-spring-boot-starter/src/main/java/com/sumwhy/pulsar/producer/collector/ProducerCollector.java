@@ -96,8 +96,8 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
             if (!StringUtils.hasLength(producerName)) {
                 producerName = topic + "-producer" + UUID.randomUUID();
             }
-            String tenant = producerHolder.getTenant();
-            String namespace = producerHolder.getNamespace();
+            String tenant = stringValueResolver.resolveStringValue(producerHolder.getTenant());
+            String namespace = stringValueResolver.resolveStringValue(producerHolder.getNamespace());
             ProducerBuilder<?> builder = pulsarClient.newProducer(schema)
                     .topic(topicBuilder.buildTopicUrl(tenant, namespace, topic)).producerName(producerName)
                     .blockIfQueueFull(producerHolder.isBlockIfQueueFull())

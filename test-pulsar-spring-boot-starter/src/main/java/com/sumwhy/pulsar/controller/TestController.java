@@ -2,6 +2,7 @@ package com.sumwhy.pulsar.controller;
 
 import com.sumwhy.pulsar.PulsarTemplate;
 import com.sumwhy.pulsar.model.DelayWrapper;
+import com.sumwhy.pulsar.model.TopicInfo;
 import com.sumwhy.pulsar.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.MessageId;
@@ -40,6 +41,8 @@ public class TestController {
     @PostMapping("/user")
     public void sendUser(@RequestBody User user) throws Exception {
         //user-topic
+        pulsarTemplate.send(TopicInfo.builder("topic-receive-task-detail-queue")
+                .namespace("sms-mq").build(), new User());
         MessageId send = pulsarTemplate.send("user-topic", user);
         log.info("messageId:{} 的消息成功发送", send);
     }

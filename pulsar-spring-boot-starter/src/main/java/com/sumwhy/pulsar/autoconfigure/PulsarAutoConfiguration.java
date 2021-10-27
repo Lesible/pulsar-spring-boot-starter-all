@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author 何嘉豪
  */
 @Configuration
-@ComponentScan(basePackages = "io.lesible")
+@ComponentScan(basePackages = "com.sumwhy.pulsar")
 @ConditionalOnProperty(name = "pulsar.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties({PulsarProperties.class, GlobalConsumerProperties.class})
 public class PulsarAutoConfiguration {
