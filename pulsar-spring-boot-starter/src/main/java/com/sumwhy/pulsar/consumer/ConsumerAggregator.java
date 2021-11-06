@@ -11,7 +11,6 @@ import com.sumwhy.pulsar.util.TopicBuilder;
 import com.sumwhy.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.*;
-import org.apache.pulsar.client.util.RetryMessageUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Configuration;
@@ -111,8 +110,7 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                 String deadLetterTopic = deadLetter.deadLetterTopic();
                 String retryLetterTopic = deadLetter.retryLetterTopic();
                 DeadLetterPolicy deadLetterPolicy;
-                if (maxRedeliverCount == RetryMessageUtil.MAX_RECONSUMETIMES
-                        && !StringUtils.hasLength(deadLetterTopic)
+                if (!StringUtils.hasLength(deadLetterTopic)
                         && !StringUtils.hasLength(retryLetterTopic)) {
                     // 对于没有设置的场景, pulsar 将会在 retryEnable 时,自动初始化一个默认的死信策略
                     String prefix;
@@ -133,7 +131,7 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                     deadLetterPolicy = DeadLetterPolicy.builder()
                             .deadLetterTopic(prefix + deadQueueSuffix)
                             .retryLetterTopic(prefix + retryQueueSuffix)
-                            .maxRedeliverCount(16).build();
+                            .maxRedeliverCount(maxRedeliverCount).build();
                 } else {
                     DeadLetterPolicy.DeadLetterPolicyBuilder builder = DeadLetterPolicy.builder();
                     builder.maxRedeliverCount(maxRedeliverCount);
@@ -169,7 +167,15 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                             }
                         }
                     }
-                    handler.invoke(invoker, args);
+                    int parameterCount = handler.getParameterCount();
+                    // 如果是一个参数
+                    if (parameterCount == 1) {
+                        handler.invoke(invoker, args);
+                    }
+                    // 三个参数的场景
+                    if (parameterCount == 3) {
+                        handler.invoke(invoker, args, consumer, msg);
+                    }
                     consumer.acknowledge(msg);
                 } catch (Exception e) {
                     // 捕获到异常, 取消消费确认(直接投递到重试队列)

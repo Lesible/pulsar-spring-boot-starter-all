@@ -6,7 +6,7 @@
 
     <groupId>com.sumwhy.pulsar</groupId>
     <artifactId>pulsar-spring-boot-starter-all</artifactId>
-    <version>1.2.11</version>
+    <version>1.2.12</version>
     <packaging>pom</packaging>
 
     <modules>

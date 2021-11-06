@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.sumwhy.pulsar</groupId>
         <artifactId>pulsar-spring-boot-starter-all</artifactId>
-        <version>1.2.11</version>
+        <version>1.2.12</version>
     </parent>
 
     <artifactId>test-pulsar-spring-boot-starter</artifactId>
-    <version>1.2.11</version>
+    <version>1.2.12</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -8,6 +8,8 @@ import com.sumwhy.pulsar.model.User;
 import com.sumwhy.pulsar.producer.IProducerFactory;
 import com.sumwhy.pulsar.producer.ProducerFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.client.api.Consumer;
+import org.apache.pulsar.client.api.Message;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -86,7 +88,9 @@ public class PulsarConfig {
     }
 
     @PulsarConsumer(topic = "user-topic")
-    public void userTopicConsumer(User user) throws Exception {
+    public void userTopicConsumer(User user, Consumer<?> consumer, Message<byte[]> message) throws Exception {
+        log.info("consumer: {}", consumer);
+        log.info("message: {}", message);
         log.info("user: {},date: {}", user, LocalDateTime.now());
     }
 

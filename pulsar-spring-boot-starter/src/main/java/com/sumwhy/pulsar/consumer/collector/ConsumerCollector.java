@@ -2,6 +2,9 @@ package com.sumwhy.pulsar.consumer.collector;
 
 import com.sumwhy.pulsar.annotation.PulsarConsumer;
 import com.sumwhy.pulsar.consumer.ConsumerHolder;
+import com.sumwhy.pulsar.exception.InitFailedException;
+import org.apache.pulsar.client.api.Consumer;
+import org.apache.pulsar.client.api.Message;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,14 +49,25 @@ public class ConsumerCollector implements BeanPostProcessor {
      * @param bean     所有受 spring 容器管理的 bean
      * @param beanName bean 的名称
      * @return bean
-     * @throws BeansException beansException
+     * @throws BeansException e
      */
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         Class<?> beanClass = bean.getClass();
         consumerHolderMapping.putAll(Arrays.stream(beanClass.getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(PulsarConsumer.class))
-                .map(method -> new ConsumerHolder(AnnotationUtils.getAnnotation(method, PulsarConsumer.class), bean, method))
+                .map(method -> {
+                    // 校验方法定义的合法性
+                    int parameterCount = method.getParameterCount();
+                    if (parameterCount == 3) {
+                        Class<?>[] parameterTypes = method.getParameterTypes();
+                        if (!parameterTypes[1].isAssignableFrom(Consumer.class) ||
+                                !parameterTypes[2].isAssignableFrom(Message.class))
+                            throw new InitFailedException(
+                                    String.format("方法定义有误,method name is %s", method.getName()));
+                    }
+                    return new ConsumerHolder(AnnotationUtils.getAnnotation(method, PulsarConsumer.class), bean, method);
+                })
                 .collect(Collectors.toMap(this::getConsumerName, consumer -> consumer,
                         // 为旧值添加下标
                         (oldValue, newValue) -> {
