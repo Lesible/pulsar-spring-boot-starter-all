@@ -114,6 +114,13 @@ public class ProducerCollector implements BeanPostProcessor, EmbeddedValueResolv
             }
             Producer<?> producer = builder.create();
             log.debug("初始化 topic 为 [{}] 的生产者成功", topic);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    producer.close();
+                } catch (PulsarClientException e) {
+                    log.error("停止生产者失败,producer:{}", producer.getProducerName(), e);
+                }
+            }, "shutdown-producer"));
             return producer;
         } catch (PulsarClientException e) {
             log.error("初始化 topic 为 [{}] 的生产者失败", topic);

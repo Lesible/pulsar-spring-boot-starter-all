@@ -185,6 +185,13 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
             });
             Consumer<?> subscribe = consumerBuilder.subscribe();
             log.debug("初始化 topic 为 [{}] 的消费者成功", topic);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    subscribe.close();
+                } catch (PulsarClientException e) {
+                    log.error("停止消费者失败,consumer:{}", subscribe.getConsumerName(), e);
+                }
+            }, "shutdown-consumer"));
             return subscribe;
         } catch (PulsarClientException e) {
             log.error("初始化 topic 为 [{}] 的消费者失败", topic, e);

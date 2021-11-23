@@ -1,7 +1,6 @@
 package com.sumwhy.pulsar.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sumwhy.pulsar.annotation.DeadLetter;
 import com.sumwhy.pulsar.annotation.PulsarConsumer;
 import com.sumwhy.pulsar.model.ProducerHolder;
 import com.sumwhy.pulsar.model.User;
@@ -57,21 +56,9 @@ public class PulsarConfig {
                         .producerName("batch-user-producer")
                         .enableBatching(true)
                         .build())
-                .addProducer(ProducerHolder.builder("topic-receive-task-detail-queue")
-                        .namespace("sms-mq").build())
                 .addProducer("delay-after-topic")
                 .addProducer("delay-at-topic")
                 .addProducer("user-topic");
-    }
-
-    @PulsarConsumer(topic = "topic_task_status_callback_tagvv",
-            deadLetter = @DeadLetter(maxRedeliverCount = 3,
-                    deadLetterTopic = "topic_task_status_callback_tagvv-DLQ",
-                    retryLetterTopic = "topic_task_status_callback_tagvv-RETRY"),
-            namespace = "${sms.namespace}")
-    public void batchConsumeUser(byte[] bytes) throws Exception {
-        User user = new ObjectMapper().readValue(new String(bytes, StandardCharsets.UTF_8), User.class);
-        log.info("user: {}", user);
     }
 
 
