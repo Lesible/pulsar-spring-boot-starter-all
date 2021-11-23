@@ -7,7 +7,7 @@
     <parent>
         <artifactId>pulsar-spring-boot-starter-all</artifactId>
         <groupId>com.sumwhy.pulsar</groupId>
-        <version>1.2.12</version>
+        <version>1.2.13</version>
     </parent>
 
     <artifactId>pulsar-spring-boot-starter</artifactId>
