@@ -175,6 +175,7 @@ public class ConsumerAggregator implements EmbeddedValueResolverAware {
                     // 三个参数的场景
                     if (parameterCount == 3) {
                         handler.invoke(invoker, args, consumer, msg);
+                        return;
                     }
                     consumer.acknowledge(msg);
                 } catch (Exception e) {
