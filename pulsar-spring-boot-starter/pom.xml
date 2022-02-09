@@ -4,16 +4,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>pulsar-spring-boot-starter-all</artifactId>
-        <groupId>com.sumwhy.pulsar</groupId>
-        <version>1.2.13</version>
-    </parent>
-
+    <groupId>com.sumwhy.pulsar</groupId>
+    <version>1.2.14</version>
     <artifactId>pulsar-spring-boot-starter</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <commons.assembly.version>1.0.5</commons.assembly.version>
+        <lombok.version>1.18.18</lombok.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <pulsar.version>2.7.1</pulsar.version>
+        <jackson.version>2.11.3</jackson.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.sumwhy.tagvv</groupId>
             <artifactId>commons-utils</artifactId>
@@ -49,6 +61,26 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>sumwhy nexus</id>
+            <url>https://xm7.cn/nexus/repository/maven-public</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>nexus release</name>
+            <url>https://xm7.cn/nexus/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>nexus snapshots</name>
+            <url>https://xm7.cn/nexus/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>
@@ -96,5 +128,27 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.sumwhy.tagvv</groupId>
+                <artifactId>commons-dependencies</artifactId>
+                <version>${commons.assembly.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.pulsar</groupId>
+                <artifactId>pulsar-client</artifactId>
+                <version>${pulsar.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
